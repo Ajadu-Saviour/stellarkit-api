@@ -52,6 +52,7 @@ This project is ideal for:
 - [Webhooks Guide](docs/webhooks.md) - Register webhooks, available events, payload shapes, signature verification, retries, and unregistration
 - [Webhook Security Guide](docs/webhook-security.md) - Verify HMAC-SHA256 delivery signatures in Node.js/Python/Go, handle invalid signatures, store secrets safely, and rotate with the dual-secret pattern
 - [Batch Endpoints Guide](docs/batch-endpoints.md) - Batch trust-status, freeze-status, and transaction status APIs, limits, and when to use batch vs individual
+- [DEX Endpoints Guide](docs/dex-endpoints.md) - All six DEX endpoints with curl examples, sample responses, and guidance on spread vs depth vs imbalance vs arbitrage
 - [Caching Strategy](docs/caching-strategy.md) - Per-endpoint cache TTLs and configuration
 - [Logging Guide](docs/logging.md) - Log levels, configuration, structured log entry fields, JSON parsing, and production monitoring
 - [Monitoring Guide](docs/monitoring.md) - Key metrics, alert thresholds, health check polling strategy, and integration patterns for Prometheus, Datadog, CloudWatch, and uptime tools
@@ -793,6 +794,65 @@ Retrieves transaction history for an account, with pagination.
 ### `GET /transactions/:id/operations`
 
 Retrieves operation history for an account, with pagination.
+
+### `POST /transactions/batch-status`
+
+Checks the confirmation status of up to 20 transaction hashes in a single request. All Horizon lookups are performed in parallel. Each hash in the response includes a `found` flag; when `found` is `true` the entry also carries `successful`, `ledger`, `createdAt`, and `fee`.
+
+**Request body:**
+
+```json
+{
+  "hashes": [
+    "6bc97b244e4eff6e3a1c82e4bab89f6e6b6a3a1e5e6b7e8f9a0b1c2d3e4f5a6b",
+    "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+  ]
+}
+```
+
+**curl example:**
+
+```bash
+curl -X POST "http://localhost:3000/transactions/batch-status" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hashes": [
+      "6bc97b244e4eff6e3a1c82e4bab89f6e6b6a3a1e5e6b7e8f9a0b1c2d3e4f5a6b",
+      "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+    ]
+  }'
+```
+
+**Sample response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "hash": "6bc97b244e4eff6e3a1c82e4bab89f6e6b6a3a1e5e6b7e8f9a0b1c2d3e4f5a6b",
+        "found": true,
+        "successful": true,
+        "ledger": 52834901,
+        "createdAt": "2026-09-20T14:32:11Z",
+        "fee": "100"
+      },
+      {
+        "hash": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+        "found": false
+      }
+    ],
+    "total": 2
+  }
+}
+```
+
+**Key points:**
+- Body: `hashes` — array of 64-character hex transaction hashes, maximum 20 per request.
+- Returns `400` if more than 20 hashes are supplied or any hash is not a valid 64-character hex string.
+- When `found: false` the hash was not found on the network (unconfirmed or invalid).
+- Per-hash `fee` is in stroops (100 stroops = 0.0000100 XLM).
 
 ### `GET /asset/:code/:issuer`
 
