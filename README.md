@@ -61,6 +61,7 @@ This project is ideal for:
 - [Error Codes](docs/error-codes.md) - HTTP status code reference with descriptions, scenarios, and sample responses
 - [Rate Limiting](docs/rate-limiting.md) - Default limits, configuration, response headers, and retry strategies
 - [Frequently Asked Questions (FAQ)](FAQ.md) - Common setup and contribution questions
+- [Utilities Guide](docs/utilities.md) - All utility endpoints with use cases, curl examples, and sample responses
 
 ---
 
@@ -107,6 +108,7 @@ This project is ideal for:
 | GET | `/account/:id/risk-score` | Computed risk score and contributing factors | — |
 | GET | `/account/:id/freeze-status/:assetCode/:assetIssuer` | Check if an asset is frozen on an account | — |
 | GET | `/account/:id/can-receive/:assetCode/:assetIssuer` | Check if an account can receive a specific asset | — |
+| GET | `/account/:id/signers` | Account signers, their weights, and threshold configuration | — |
 | GET | `/account/:id/subentry-health` | Subentry usage and remaining capacity | — |
 | GET | `/account/:id/sponsorship` | Sponsorship relationships for the account | — |
 | GET | `/account/:id/sponsorships` | Typed sponsorship summary with sponsoredBy and sponsoring arrays | — |
@@ -220,12 +222,19 @@ See [docs/soroban.md](docs/soroban.md) for a full walkthrough with curl examples
 
 - `src/index.js` — application entry point
 - `src/websocket.js` — WebSocket helper for Stellar streaming data
-- `src/config/stellar.js` — Stellar network configuration
-- `src/routes/` — Express route handlers for API endpoints
-- `src/utils/` — shared helpers for formatting, validation, caching, response shaping
-- `src/middleware/` — validation, error handling, rate limiting
-- `tests/` — API and integration tests
+- `src/config/` — Stellar SDK and Horizon server configuration, cache config
+- `src/routes/` — Express route handlers for all API endpoints
+- `src/utils/` — shared helpers for formatting, validation, caching, and response shaping
+- `src/middleware/` — validation, error handling, rate limiting, API key auth, sanitization
+- `src/services/` — background services including cache, webhook delivery, and contract event polling
+- `tests/` — Jest + Supertest API tests (160+ files covering unit, integration, middleware, and stream tests)
 - `types/index.d.ts` — exported TypeScript type definitions
+- `docs/` — in-depth guides for deployment, webhooks, Soroban, streaming, rate limiting, observability, and more
+- `examples/` — runnable demo scripts for multisig, pool positions, spread calculation, and transaction search
+- `scripts/` — developer utility scripts including testnet account seeding and WebSocket client demo
+- `sdk/` — TypeScript SDK client with typed methods for accounts, assets, DEX, fees, network, and Soroban
+- `types/` — bundled TypeScript type declarations for use in TypeScript projects
+- `.github/` — GitHub Actions CI workflow and pull request template
 
 ---
 
